@@ -23,12 +23,17 @@ def main():
         for project in target.keys():
             for cluster in target[project]:
                 url = '%s/%s/clusters/%s/status' % (hybirdmongo, project, cluster)
-                result = requests.get(url, headers=headers)
 
-                if result.text == 'Authentication required':
-                    token = get_token()
-                    headers = {'X-Auth-Token': token}
+                try:
                     result = requests.get(url, headers=headers)
+
+                    if result.text == 'Authentication required':
+                        token = get_token()
+                        headers = {'X-Auth-Token': token}
+                        result = requests.get(url, headers=headers)
+                    assert result.status_code == 200
+                except:
+                    pass
 
                 text = json.loads(result.text)
                 assign_metrics(text, project, cluster)
